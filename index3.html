@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fábrica de Empresas — Links</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@600;700&family=Poppins:wght@700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #EFEFEE;
+            --blue: #222852;
+            --orange: #EE731B;
+            --light: #FFFFFF;
+            --font-h: 'Oswald', sans-serif;
+            --font-p: 'Poppins', sans-serif;
+            --font-b: 'Inter', sans-serif;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            overflow: hidden;
+            font-family: var(--font-h);
+            cursor: none;
+            scrollbar-width: none;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ── CURSOR ── */
+        #cursor {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--orange);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease;
+        }
+
+        #cursor-ring {
+            position: fixed;
+            width: 34px;
+            height: 34px;
+            border: 1.5px solid rgba(34, 40, 82, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: width 0.35s ease, height 0.35s ease, border-color 0.3s ease;
+        }
+
+        body.link-hover #cursor {
+            transform: translate(-50%, -50%) scale(2.2);
+        }
+
+        body.link-hover #cursor-ring {
+            width: 54px;
+            height: 54px;
+            border-color: var(--orange);
+        }
+
+        /* ── LOADER ── */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 8000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 22px;
+            transition: opacity 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+
+        #loader.out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-logo-wrap {
+            animation: ld-in 0.7s 0.1s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        .loader-bar-wrap {
+            width: 180px;
+            height: 2px;
+            background: rgba(34, 40, 82, 0.1);
+            overflow: hidden;
+            animation: ld-in 0.5s 0.4s ease both;
+        }
+
+        .loader-bar {
+            height: 100%;
+            background: var(--orange);
+            width: 0%;
+            transition: width 0.06s linear;
+        }
+
+        .loader-label {
+            font-family: var(--font-p);
+            font-size: 9px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(34, 40, 82, 0.35);
+            animation: ld-in 0.5s 0.6s ease both;
+        }
+
+        @keyframes ld-in {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── APP LAYOUT ── */
+        #app {
+            width: 100vw;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        #app.visible {
+            opacity: 1;
+        }
+
+        /* ═══════════════ LEFT PANEL ═══════════════ */
+        .panel-left {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 52px 60px;
+            overflow: hidden;
+            border-right: 1px solid rgba(34, 40, 82, 0.1);
+        }
+
+        #three-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .left-content {
+            position: relative;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .brand-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-p);
+            font-size: 9px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: rgba(34, 40, 82, 0.4);
+            margin-bottom: 28px;
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        .brand-tag-dash {
+            width: 24px;
+            height: 1px;
+            background: var(--orange);
+        }
+
+        .brand-name {
+            font-family: var(--font-h);
+            font-weight: 700;
+            font-size: clamp(40px, 4.8vw, 68px);
+            line-height: 0.93;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .brand-name .l1 {
+            color: var(--blue);
+            display: block;
+        }
+
+        .brand-name .l2 {
+            color: var(--orange);
+            display: block;
+        }
+
+        .brand-name .l3 {
+            color: var(--blue);
+            display: block;
+        }
+
+        .brand-desc {
+            font-family: var(--font-b);
+            font-weight: 300;
+            font-size: clamp(12px, 1.1vw, 13px);
+            color: rgba(34, 40, 82, 0.5);
+            line-height: 1.8;
+            max-width: 260px;
+            letter-spacing: 0.02em;
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        /* corner marks — brand signature */
+        .corner {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border-color: rgba(238, 115, 27, 0.35);
+            border-style: solid;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .ctla {
+            top: 28px;
+            left: 28px;
+            border-width: 1px 0 0 1px;
+        }
+
+        .cbrb {
+            bottom: 28px;
+            right: 28px;
+            border-width: 0 1px 1px 0;
+        }
+
+        /* orange vertical stripe */
+        .v-stripe {
+            position: absolute;
+            right: -1px;
+            top: 0;
+            width: 3px;
+            height: 0%;
+            background: var(--orange);
+            z-index: 4;
+            transition: height 0.9s cubic-bezier(0.7, 0, 0.3, 1) 1.0s;
+        }
+
+        .v-stripe.grow {
+            height: 100%;
+        }
+
+        /* ═══════════════ RIGHT PANEL ═══════════════ */
+        .panel-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 52px 60px;
+            position: relative;
+        }
+
+        .corner-rtr {
+            position: absolute;
+            top: 28px;
+            right: 28px;
+            border-width: 1px 1px 0 0;
+        }
+
+        .corner-rbl {
+            position: absolute;
+            bottom: 28px;
+            left: 28px;
+            border-width: 0 0 1px 1px;
+        }
+
+        .links-heading {
+            font-family: var(--font-p);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.26em;
+            text-transform: uppercase;
+            color: var(--blue);
+            margin-top: -24px;
+            margin-bottom: 26px;
+            padding-left: 2px;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        /* group separators */
+        .gsep {
+            font-family: var(--font-p);
+            font-size: 7.5px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--orange);
+            opacity: 0;
+            transform: translateY(8px);
+            padding: 13px 0 5px;
+        }
+
+        /* ── LINK ITEMS ── */
+        .link-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 14px 9px;
+            flex: 1; /* Faz os itens preencherem verticalmente a parte direita inteira */
+            border-bottom: 1px solid rgba(34, 40, 82, 0.08);
+            text-decoration: none;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateX(28px);
+            cursor: none;
+        }
+
+        .link-item:first-of-type {
+            border-top: 1px solid rgba(34, 40, 82, 0.08);
+        }
+
+        /* fill sweep — blue */
+        .link-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--blue);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.42s cubic-bezier(0.7, 0, 0.3, 1);
+            z-index: 0;
+        }
+
+        .link-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* orange left flash on hover */
+        .link-item::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--orange);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 0.35s cubic-bezier(0.7, 0, 0.3, 1) 0.05s;
+            z-index: 1;
+        }
+
+        .link-item:hover::after {
+            transform: scaleY(1);
+        }
+
+        .link-num {
+            position: relative;
+            z-index: 2;
+            font-family: var(--font-p);
+            font-weight: 700;
+            font-size: 11px;
+            color: rgba(238, 115, 27, 0.6);
+            letter-spacing: 0.08em;
+            width: 26px;
+            flex-shrink: 0;
+            transition: color 0.25s, transform 0.3s ease;
+        }
+
+        .link-item:hover .link-num {
+            color: rgba(255, 255, 255, 0.5);
+            transform: translateX(-3px);
+        }
+
+        .link-icon {
+            position: relative;
+            z-index: 2;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .link-item:hover .link-icon {
+            transform: scale(1.1);
+        }
+
+        .link-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .link-text-wrap {
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .link-label {
+            font-family: var(--font-h);
+            font-weight: 600;
+            font-size: clamp(14px, 1.4vw, 18px);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--blue);
+            transition: color 0.25s;
+            line-height: 1;
+        }
+
+        .link-detail {
+            font-family: var(--font-b);
+            font-weight: 300;
+            font-size: 12px;
+            color: rgba(34, 40, 82, 0.4);
+            letter-spacing: 0.02em;
+            transition: color 0.25s;
+        }
+
+        .link-item:hover .link-label {
+            color: #EFEFEE;
+        }
+
+        .link-item:hover .link-detail {
+            color: rgba(239, 239, 238, 0.55);
+        }
+
+        /* icon stroke → white on hover */
+        .link-item:hover .link-icon svg path[stroke],
+        .link-item:hover .link-icon svg rect,
+        .link-item:hover .link-icon svg circle,
+        .link-item:hover .link-icon svg polyline,
+        .link-item:hover .link-icon svg line {
+            stroke: #EFEFEE !important;
+        }
+
+        .link-item:hover .link-icon.fi svg path {
+            fill: #EFEFEE !important;
+            stroke: none !important;
+        }
+
+        .link-arrow {
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+            opacity: 0.3;
+            transition: transform 0.3s ease, opacity 0.25s;
+        }
+
+        .link-item:hover .link-arrow {
+            transform: translateX(5px);
+            opacity: 1;
+        }
+
+        .link-item:hover .link-arrow svg line,
+        .link-item:hover .link-arrow svg polyline {
+            stroke: #EFEFEE !important;
+        }
+
+        /* ── MOBILE ── */
+        @media (max-width: 820px) {
+
+            html,
+            body {
+                overflow-y: auto;
+                cursor: auto;
+            }
+
+            #app {
+                grid-template-columns: 1fr;
+                grid-template-rows: 52vh auto;
+                height: auto;
+            }
+
+            .panel-left {
+                padding: 36px 28px;
+            }
+
+            .panel-right {
+                padding: 36px 28px;
+            }
+
+            .v-stripe {
+                display: none;
+            }
+
+            #cursor,
+            #cursor-ring {
+                display: none;
+            }
+
+            body {
+                cursor: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="cursor"></div>
+    <div id="cursor-ring"></div>
+
+    <!-- ── LOADER ── -->
+    <div id="loader">
+        <div class="loader-logo-wrap">
+            <svg width="72" height="62" viewBox="0 0 165 88" fill="none">
+                <path
+                    d="M122.521 1.58C99.35 1.58 80.57 20.47 80.57 43.78C80.57 67.08 99.35 85.97 122.521 85.97C145.69 85.97 164.47 67.08 164.47 43.78C164.47 20.47 145.686 1.58 122.521 1.58ZM115.054 63.93H105.857V37.65H106.687C111.304 37.65 115.051 41.42 115.051 46.07V63.93ZM137.414 40.96C137.414 45.64 133.651 49.42 129.004 49.42H118.71V43.57C118.71 41.69 120.22 40.17 122.085 40.17H137.414ZM143.996 26.65C143.996 31.62 139.988 35.65 135.045 35.65H115.051C109.973 35.65 105.854 31.51 105.854 26.4H143.994Z"
+                    fill="#222852" />
+                <path
+                    d="M71.0438 43.78V85.97C48.032 85.97 29.094 66.93 29.094 43.78C29.094 20.63 48.032 1.58 71.0438 1.58Z"
+                    fill="#EE731B" />
+                <path d="M19.567 43.78V67.84C8.89 67.84 0.104 56.98 0.104 43.78C0.104 30.58 8.89 19.72 19.567 19.72Z"
+                    fill="#222852" />
+            </svg>
+        </div>
+        <div class="loader-bar-wrap">
+            <div class="loader-bar" id="loader-bar"></div>
+        </div>
+        <div class="loader-label" id="loader-label">Carregando</div>
+    </div>
+
+    <!-- ── APP ── -->
+    <div id="app">
+
+        <!-- LEFT -->
+        <div class="panel-left">
+            <canvas id="three-canvas"></canvas>
+            <div class="corner ctla"></div>
+            <div class="corner cbrb"></div>
+            <div class="v-stripe" id="vstripe"></div>
+
+            <div class="left-content">
+                <div class="brand-tag" id="btag">
+                    <span class="brand-tag-dash"></span>
+                    Central de Links
+                </div>
+                <h1 class="brand-name" id="bname">
+                    <span class="l1">Fábrica</span>
+                    <span class="l2">de</span>
+                    <span class="l3">Empresas</span>
+                </h1>
+                <p class="brand-desc" id="bdesc">
+                    Tiramos sua ideia do papel.<br>
+                    Escolha um canal abaixo<br>e vamos conversar.
+                </p>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="panel-right">
+            <div class="corner corner-rtr"></div>
+            <div class="corner corner-rbl"></div>
+
+            <div class="links-heading" id="lheading">— Como nos encontrar —</div>
+
+            <!-- Redes Sociais -->
+            <div class="gsep gs" id="gs0">Redes Sociais</div>
+
+            <a class="link-item li" href="https://instagram.com/" target="_blank" rel="noopener">
+                <span class="link-num">01</span>
+                <span class="link-icon fi">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
+                            fill="#222852" />
+                    </svg>
+                </span>
+                <span class="link-text-wrap">
+                    <span class="link-label">Instagram</span>
+                    <span class="link-detail">@fabricadeempresas</span>
+                </span>
+                <span class="link-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EE731B"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg></span>
+            </a>
+
+            <a class="link-item li" href="https://linkedin.com/" target="_blank" rel="noopener">
+                <span class="link-num">02</span>
+                <span class="link-icon fi">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+                            fill="#222852" />
+                    </svg>
+                </span>
+                <span class="link-text-wrap">
+                    <span class="link-label">LinkedIn</span>
+                    <span class="link-detail">Fábrica de Empresas</span>
+                </span>
+                <span class="link-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EE731B"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg></span>
+            </a>
+
+            <!-- Contato -->
+            <div class="gsep gs" id="gs1">Contato Direto</div>
+
+            <a class="link-item li" href="https://wa.me/5562998511232" target="_blank" rel="noopener">
+                <span class="link-num">03</span>
+                <span class="link-icon fi">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
+                            fill="#222852" />
+                    </svg>
+                </span>
+                <span class="link-text-wrap">
+                    <span class="link-label">WhatsApp</span>
+                    <span class="link-detail">(62) 99851-1232</span>
+                </span>
+                <span class="link-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EE731B"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg></span>
+            </a>
+
+            <a class="link-item li" href="mailto:contato@fabricadeempresas.com.br">
+                <span class="link-num">04</span>
+                <span class="link-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#222852" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <path d="M22 6l-10 7L2 6" />
+                    </svg>
+                </span>
+                <span class="link-text-wrap">
+                    <span class="link-label">E-mail</span>
+                    <span class="link-detail">contato@fabricadeempresas.com.br</span>
+                </span>
+                <span class="link-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EE731B"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg></span>
+            </a>
+
+            <a class="link-item li" href="https://g.page/r/" target="_blank" rel="noopener">
+                <span class="link-num">05</span>
+                <span class="link-icon fi">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                            fill="#222852" />
+                        <path
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            fill="#222852" />
+                        <path
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                            fill="#222852" />
+                        <path
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                            fill="#EE731B" />
+                    </svg>
+                </span>
+                <span class="link-text-wrap">
+                    <span class="link-label">Google</span>
+                    <span class="link-detail">Avalie no Maps</span>
+                </span>
+                <span class="link-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EE731B"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg></span>
+            </a>
+
+            <!-- Acessar -->
+            <div class="gsep gs" id="gs2">Acessar / Localização</div>
+
+            <a class="link-item li" href="https://guilhermao10010.github.io/site_fabrica/" target="_blank"
+                rel="noopener">
+                <span class="link-num">06</span>
+                <span class="link-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#222852" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="2" y1="12" x2="22" y2="12" />
+                        <path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" />
+                    </svg>
+                </span>
+                <span class="link-text-wrap">
+                    <span class="link-label">Site Oficial</span>
+                    <span class="link-detail">fabricadeempresas.com.br</span>
+                </span>
+                <span class="link-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EE731B"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg></span>
+            </a>
+
+            <a class="link-item li" href="https://guilhermao10010.github.io/site_fabrica/#secao-contato" target="_blank"
+                rel="noopener">
+                <span class="link-num">07</span>
+                <span class="link-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#222852" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                </span>
+                <span class="link-text-wrap">
+                    <span class="link-label">Formulário — Clientes</span>
+                    <span class="link-detail">Solicite um orçamento</span>
+                </span>
+                <span class="link-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EE731B"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg></span>
+            </a>
+
+            <a class="link-item li" href="https://maps.google.com/?q=Rua+Dona+Maria+Rodrigues+Ramos+Qd+1A+Lt+23+Casa+2"
+                target="_blank" rel="noopener">
+                <span class="link-num">08</span>
+                <span class="link-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#222852" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                </span>
+                <span class="link-text-wrap">
+                    <span class="link-label">Endereço</span>
+                    <span class="link-detail">Rua Dona Maria Rodrigues Ramos — Qd 1A, Lt 23</span>
+                </span>
+                <span class="link-arrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EE731B"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg></span>
+            </a>
+
+        </div>
+    </div>
+
+    <script>
+        /* ══════════════════════════════════════════════
+           THREE.JS — Geometric shapes: squares & triangles
+           Floating, rotating, reacting to mouse
+        ══════════════════════════════════════════════ */
+        (function initThree() {
+            const canvas = document.getElementById('three-canvas');
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            const W = () => canvas.offsetWidth;
+            const H = () => canvas.offsetHeight;
+            renderer.setSize(W(), H());
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, W() / H(), 0.1, 100);
+            camera.position.z = 7;
+
+            // ── Subtle directional light so edges catch light
+            const dLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            dLight.position.set(3, 4, 5);
+            scene.add(dLight);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+
+            // ── Material factory
+            const matSolid = (hex, op) => new THREE.MeshPhongMaterial({
+                color: hex, transparent: true, opacity: op,
+                shininess: 20, side: THREE.DoubleSide,
+            });
+            const matEdge = (hex, op) => new THREE.LineBasicMaterial({ color: hex, transparent: true, opacity: op });
+
+            // ── Shape definitions: squares (PlaneGeometry) and triangles (custom)
+            const shapes = [];
+
+            function makeSquare(size, color, edgeColor, solidOp, edgeOp, pos, rotSpeed) {
+                const geo = new THREE.PlaneGeometry(size, size);
+                const mesh = new THREE.Mesh(geo, matSolid(color, solidOp));
+                mesh.position.set(...pos);
+
+                // edge lines
+                const edgeGeo = new THREE.EdgesGeometry(geo);
+                const line = new THREE.LineSegments(edgeGeo, matEdge(edgeColor, edgeOp));
+                mesh.add(line);
+
+                scene.add(mesh);
+                shapes.push({ 
+                    mesh, rotSpeed, phase: Math.random() * Math.PI * 2, 
+                    floatAmp: 0.12 + Math.random() * 0.18, floatSpeed: 0.5 + Math.random() * 0.4, 
+                    offsetX: pos[0], offsetY: pos[1] 
+                });
+            }
+
+            function makeTriangle(size, color, edgeColor, solidOp, edgeOp, pos, rotSpeed) {
+                // Equilateral triangle via BufferGeometry
+                const h = size * Math.sqrt(3) / 2;
+                const verts = new Float32Array([
+                    0, h * 2 / 3, 0,
+                    -size / 2, -h * 1 / 3, 0,
+                    size / 2, -h * 1 / 3, 0,
+                ]);
+                const geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+                geo.setIndex([0, 1, 2]);
+                geo.computeVertexNormals();
+
+                const mesh = new THREE.Mesh(geo, matSolid(color, solidOp));
+                mesh.position.set(...pos);
+
+                // edge
+                const edgeGeo = new THREE.BufferGeometry();
+                edgeGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                    0, h * 2 / 3, 0, -size / 2, -h / 3, 0,
+                    -size / 2, -h / 3, 0, size / 2, -h / 3, 0,
+                    size / 2, -h / 3, 0, 0, h * 2 / 3, 0,
+                ]), 3));
+                const line = new THREE.LineSegments(edgeGeo, matEdge(edgeColor, edgeOp));
+                mesh.add(line);
+
+                scene.add(mesh);
+                shapes.push({ 
+                    mesh, rotSpeed, phase: Math.random() * Math.PI * 2, 
+                    floatAmp: 0.1 + Math.random() * 0.15, floatSpeed: 0.4 + Math.random() * 0.5, 
+                    offsetX: pos[0], offsetY: pos[1] 
+                });
+            }
+
+            // Deslocando X para a esquerda (-1.0 a -1.5) para evitar sobrepor a central de links
+            // LARGE background square — very faint, almost invisible
+            makeSquare(3.2, 0xEFEFEE, 0x222852, 0.18, 0.06, [-0.6, 0.2, -1.5], { x: 0.0008, y: 0.0012 });
+
+            // Medium square — blue tinted
+            makeSquare(1.4, 0xEFEFEE, 0x222852, 0.28, 0.18, [-2.2, 0.8, 0], { x: 0.003, y: 0.002 });
+
+            // Small square — orange accent
+            makeSquare(0.55, 0xEE731B, 0xEE731B, 0.55, 0.8, [0.4, -1.0, 0.5], { x: -0.004, y: 0.005 });
+
+            // Tiny square
+            makeSquare(0.3, 0xEFEFEE, 0x222852, 0.35, 0.5, [-1.2, -1.5, 0.3], { x: 0.006, y: -0.003 });
+
+            // Large triangle — blue edge, very subtle fill
+            makeTriangle(2.2, 0xEFEFEE, 0x222852, 0.12, 0.1, [-0.2, -0.3, -0.8], { x: 0.001, y: -0.0015 });
+
+            // Medium triangle — orange
+            makeTriangle(0.9, 0xEE731B, 0xEE731B, 0.45, 0.85, [-1.8, -0.5, 0.4], { x: -0.003, y: 0.004 });
+
+            // Small triangle
+            makeTriangle(0.5, 0xEFEFEE, 0x222852, 0.3, 0.6, [0.3, 1.1, 0.2], { x: 0.005, y: 0.002 });
+
+            // Tiny triangle — orange
+            makeTriangle(0.28, 0xEE731B, 0xEE731B, 0.6, 1.0, [-2.5, 1.4, 0.1], { x: -0.006, y: -0.004 });
+
+            // Novos elementos adicionados
+            makeSquare(0.8, 0xEFEFEE, 0x222852, 0.2, 0.3, [-2.8, -0.2, 0.6], { x: 0.004, y: -0.002 });
+            makeTriangle(1.2, 0xEE731B, 0xEE731B, 0.1, 0.4, [-0.8, 1.8, -0.5], { x: -0.002, y: 0.003 });
+            makeSquare(0.4, 0xEE731B, 0xEE731B, 0.6, 0.9, [-1.5, 0.3, 1.2], { x: 0.007, y: 0.006 });
+            makeTriangle(0.6, 0xEFEFEE, 0x222852, 0.4, 0.7, [-3.2, 0.6, 0.2], { x: 0.003, y: -0.005 });
+            makeSquare(1.8, 0xEFEFEE, 0x222852, 0.15, 0.1, [-0.5, -2.0, -1.0], { x: -0.001, y: 0.002 });
+            makeTriangle(0.35, 0xEE731B, 0xEE731B, 0.8, 1.0, [-0.1, 0.5, 0.8], { x: -0.005, y: -0.007 });
+
+            // ── Mouse influence
+            let targetX = 0, targetY = 0, curX = 0, curY = 0;
+            document.addEventListener('mousemove', e => {
+                const r = canvas.getBoundingClientRect();
+                // Coordenadas baseadas no canvas (painel esquerdo)
+                let nX = ((e.clientX - r.left) / r.width - 0.5) * 2;
+                let nY = -((e.clientY - r.top) / r.height - 0.5) * 2;
+
+                // Limitação para as formas não invadirem a central de links
+                // 1.0 é a exata borda direita. 0.8 dá uma pequena margem segura.
+                targetX = Math.min(nX, 0.8);
+                targetY = nY;
+            });
+
+            // ── Resize
+            window.addEventListener('resize', () => {
+                renderer.setSize(W(), H());
+                camera.aspect = W() / H();
+                camera.updateProjectionMatrix();
+            });
+
+            // ── Animate
+            let t = 0;
+            function tick() {
+                requestAnimationFrame(tick);
+                t += 0.008;
+
+                curX += (targetX - curX) * 0.12; 
+                curY += (targetY - curY) * 0.12; 
+
+                shapes.forEach(({ mesh, rotSpeed, phase, floatAmp, floatSpeed, offsetX, offsetY }) => {
+                    // individual auto-rotation
+                    mesh.rotation.x += rotSpeed.x;
+                    mesh.rotation.y += rotSpeed.y;
+                    mesh.rotation.z += (rotSpeed.x + rotSpeed.y) * 0.3;
+
+                    // Converte a coordenada atual do "mouse virtual" pra 3D no Z específico da forma
+                    const vector = new THREE.Vector3(curX, curY, 0.5);
+                    vector.unproject(camera);
+                    const dir = vector.sub(camera.position).normalize();
+                    const distance = (mesh.position.z - camera.position.z) / dir.z;
+                    const mouseWorldPos = camera.position.clone().add(dir.multiplyScalar(distance));
+                    
+                    // O alvo da forma é a posição do "mouse" na profundidade Z dela, somado à posição original (formando a constelação)
+                    const floatOffset = Math.sin(t * floatSpeed + phase) * floatAmp * 1.5;
+                    let targetXPos = mouseWorldPos.x + offsetX;
+                    let targetYPos = mouseWorldPos.y + offsetY + floatOffset;
+
+                    // A forma "persegue" agressivamente a sua nova posição
+                    // Não clampar o targetXPos individualmente para manter a distância fixa (constelação rígida)
+                    mesh.position.x += (targetXPos - mesh.position.x) * 0.08;
+                    mesh.position.y += (targetYPos - mesh.position.y) * 0.08;
+
+                    // subtle tilt
+                    mesh.rotation.x += curY * 0.008;
+                    mesh.rotation.y += curX * 0.008;
+                });
+
+                renderer.render(scene, camera);
+            }
+            tick();
+        })();
+
+        /* ══════════════════════════════════════════════
+           CURSOR
+        ══════════════════════════════════════════════ */
+        const dot = document.getElementById('cursor');
+        const ring = document.getElementById('cursor-ring');
+        let cx = innerWidth / 2, cy = innerHeight / 2, rx = cx, ry = cy;
+
+        document.addEventListener('mousemove', e => { cx = e.clientX; cy = e.clientY; });
+
+        (function cursorLoop() {
+            dot.style.left = cx + 'px';
+            dot.style.top = cy + 'px';
+            rx += (cx - rx) * 0.1;
+            ry += (cy - ry) * 0.1;
+            ring.style.left = rx + 'px';
+            ring.style.top = ry + 'px';
+            requestAnimationFrame(cursorLoop);
+        })();
+
+        document.querySelectorAll('a').forEach(a => {
+            a.addEventListener('mouseenter', () => document.body.classList.add('link-hover'));
+            a.addEventListener('mouseleave', () => document.body.classList.remove('link-hover'));
+        });
+
+        /* ══════════════════════════════════════════════
+           LOADER → REVEAL
+        ══════════════════════════════════════════════ */
+        function reveal(el, delay, from = 'up') {
+            setTimeout(() => {
+                el.style.transition = 'opacity 0.75s cubic-bezier(0.4,0,0.2,1), transform 0.75s cubic-bezier(0.4,0,0.2,1)';
+                el.style.opacity = '1';
+                el.style.transform = 'none';
+            }, delay);
+        }
+
+        let pct = 0;
+        const bar = document.getElementById('loader-bar');
+        const lbl = document.getElementById('loader-label');
+        const lbls = ['Carregando', 'Preparando', 'Quase lá'];
+        let li = 0;
+
+        const loadInt = setInterval(() => {
+            pct += Math.random() * 24 + 8;
+            if (pct > 100) pct = 100;
+            bar.style.width = pct + '%';
+            if (pct > 40 && li === 0) { li = 1; lbl.textContent = lbls[1]; }
+            if (pct > 78 && li === 1) { li = 2; lbl.textContent = lbls[2]; }
+            if (pct >= 100) {
+                clearInterval(loadInt);
+                setTimeout(launch, 380);
+            }
+        }, 150);
+
+        function launch() {
+            const loader = document.getElementById('loader');
+            loader.classList.add('out');
+            setTimeout(() => loader.remove(), 900);
+
+            document.getElementById('app').classList.add('visible');
+
+            reveal(document.getElementById('btag'), 200);
+            reveal(document.getElementById('bname'), 340);
+            reveal(document.getElementById('bdesc'), 480);
+            setTimeout(() => document.getElementById('vstripe').classList.add('grow'), 380);
+
+            reveal(document.getElementById('lheading'), 280);
+            document.querySelectorAll('.gs').forEach((el, i) => reveal(el, 330 + i * 110));
+            document.querySelectorAll('.li').forEach((el, i) => reveal(el, 400 + i * 65));
+        }
+    </script>
+</body>
+
+</html>
